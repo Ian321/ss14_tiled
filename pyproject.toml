@@ -1,0 +1,20 @@
+[project]
+name = "ss14_tiled"
+license = {file = "LICENSE"}
+readme = {file = "README.md", content-type = "text/markdown"}
+dynamic = ["dependencies", "version"]
+
+[project.scripts]
+ss14-tiled = "ss14_tiled:main"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.pylint."DESIGN"]
+max-locals = 25
+
+[tool.pylint."MESSAGES CONTROL"]
+enable = "all"
+
+[tool.pylint."TYPECHECK"]
+generated-members = "cv2"
