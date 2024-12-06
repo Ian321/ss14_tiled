@@ -22,5 +22,5 @@ jobs:
           pip install -r requirements.txt
       - run: |
           TMP=$(mktemp -d)
-          git clone --recurse-submodules https://github.com/space-wizards/space-station-14 $TMP
+          git clone https://github.com/space-wizards/space-station-14 $TMP
           python -m ss14_tiled $TMP
