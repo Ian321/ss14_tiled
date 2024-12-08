@@ -1,4 +1,5 @@
 autopep8
+deepdiff
 opencv-python
 pylint
 pyyaml
