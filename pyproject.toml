@@ -12,6 +12,7 @@ dependencies = { file = ["requirements.txt"] }
 
 [tool.pylint."DESIGN"]
 max-locals = 25
+max-parents = 10
 
 [tool.pylint."MESSAGES CONTROL"]
 enable = "all"

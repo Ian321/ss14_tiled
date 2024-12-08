@@ -8,6 +8,7 @@ from . import __main__
 
 class TestMergeEntity(unittest.TestCase):
     """Tests to see if merging entities works."""
+
     def test_basalt(self):
         """From /Resources/Prototypes/Entities/Tiles/basalt.yml"""
         child = {
@@ -113,6 +114,7 @@ class TestMergeEntity(unittest.TestCase):
         actual = __main__.merge_entity(child, parent)
         diff = DeepDiff(actual, expected, ignore_order=True)
         assert not diff
+
 
 if __name__ == "__main__":
     unittest.main()
