@@ -3,7 +3,7 @@ import unittest
 
 from deepdiff import DeepDiff
 
-from . import __main__
+from .generate.entities import merge_entity
 
 
 class TestMergeEntity(unittest.TestCase):
@@ -83,7 +83,7 @@ class TestMergeEntity(unittest.TestCase):
                 "tags": ["HideContextMenu"]
             }]
         }
-        actual = __main__.merge_entity(child, parent)
+        actual = merge_entity(child, parent)
         diff = DeepDiff(actual, expected, ignore_order=True)
         assert not diff
 
@@ -111,7 +111,7 @@ class TestMergeEntity(unittest.TestCase):
                 "type": "test_2"
             }]
         }
-        actual = __main__.merge_entity(child, parent)
+        actual = merge_entity(child, parent)
         diff = DeepDiff(actual, expected, ignore_order=True)
         assert not diff
 

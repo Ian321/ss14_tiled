@@ -10,15 +10,16 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Generate tile sets
+# Generate or update the tile sets.
 python3 -m ss14_tiled /path/to/space-station-14/
 ```
 
 ## TODO
 
-- [ ] Import
-  - [x] Decals
-  - [ ] Entities
-  - [x] Tiles
-- [ ] Export
-  - ???
+- [ ] Generate (SS14 -> Tiled)
+  - [ ] Tile sets
+    - [x] Decals
+    - [ ] Entities
+    - [x] Tiles
+  - [ ] Map
+- [ ] Export (Tiled -> SS14)
