@@ -33,106 +33,113 @@ def create_entities(root: Path, out: Path):
                 eprint(f"Entity '{entity['id']}' has no sprite!")
                 continue
 
-            # TODO: Directions
-            dest: Path = entities_out / (str(entity["id"]) + ".png")
+            directions = 1
+            for d, direction in enumerate(("S", "N", "E", "W")):
+                if d >= directions:
+                    break
 
-            img = None
-            if "layers" not in sprite:
-                if "sprite" in sprite and "state" in sprite:
-                    sprite["layers"] = [{
-                        "sprite": sprite["sprite"],
-                        "state": sprite["state"]
-                    }]
-                elif icon is not None and "sprite" in icon and "state" in icon:
-                    sprite["layers"] = [{
-                        "sprite": icon["sprite"],
-                        "state": icon["state"]
-                    }]
-                else:
-                    eprint(f"Entity '{entity['id']}' has no sprite!")
-                    continue
-            for layer in sprite["layers"]:
-                # Skip layers that are invisible by default.
-                if "visible" in layer and not layer["visible"]:
-                    continue
-
-                if "sprite" not in layer:
-                    if "sprite" in sprite:
-                        layer["sprite"] = sprite["sprite"]
+                dest: Path = entities_out / (str(entity["id"]) + f"_{direction}.png")
+                img = None
+                if "layers" not in sprite:
+                    if "sprite" in sprite and "state" in sprite:
+                        sprite["layers"] = [{
+                            "sprite": sprite["sprite"],
+                            "state": sprite["state"]
+                        }]
+                    elif icon is not None and "sprite" in icon and "state" in icon:
+                        sprite["layers"] = [{
+                            "sprite": icon["sprite"],
+                            "state": icon["state"]
+                        }]
                     else:
-                        eprint(f"Entity '{entity['id']}' is missing a sprite!")
+                        eprint(f"Entity '{entity['id']}' has no sprite!")
                         continue
-                if "state" not in layer:
-                    if "map" not in layer and not "type" in layer:
-                        # Simply ignore if the layer uses a map or custom type.
-                        eprint(f"Entity '{entity['id']}' is missing a state!")
-                    continue
 
-                layer_rsi_file: Path = resources_dir / "Textures" / \
-                    remove_prefix(layer["sprite"], "/Textures/") / "meta.json"
-                if not layer_rsi_file.exists():
-                    eprint(f"Entity '{entity['id']}' is missing RSI!")
-                    continue
+                for layer in sprite["layers"]:
+                    # Skip layers that are invisible by default.
+                    if "visible" in layer and not layer["visible"]:
+                        continue
 
-                # Some files have a BOM for some reason...
-                json_text = layer_rsi_file.read_text(
-                    "UTF-8").replace("\uFEFF", "")
-                layer_rsa = json.loads(json_text)
+                    if "sprite" not in layer:
+                        if "sprite" in sprite:
+                            layer["sprite"] = sprite["sprite"]
+                        else:
+                            eprint(
+                                f"Entity '{entity['id']}' is missing a sprite!")
+                            continue
+                    if "state" not in layer:
+                        if "map" not in layer and not "type" in layer:
+                            # Simply ignore if the layer uses a map or custom type.
+                            eprint(
+                                f"Entity '{entity['id']}' is missing a state!")
+                        continue
 
-                # YAML has some eager boolean parsing...
-                if layer["state"] is True:
-                    yes = ["y", "yes", "true", "on"]
-                    state = next(
-                        (x for x in layer_rsa["states"] if x["name"].lower() in yes), None)
-                elif layer["state"] is False:
-                    no = ["n", "no", "false", "off"]
-                    state = next(
-                        (x for x in layer_rsa["states"] if x["name"].lower() in no), None)
-                else:
-                    state = next(
-                        (x for x in layer_rsa["states"] if x["name"] == str(layer["state"])), None)
+                    layer_rsi_file: Path = resources_dir / "Textures" / \
+                        remove_prefix(layer["sprite"], "/Textures/") / "meta.json"
+                    if not layer_rsi_file.exists():
+                        eprint(f"Entity '{entity['id']}' is missing RSI!")
+                        continue
 
-                if not state:
-                    eprint(
-                        f"Entity '{entity['id']}' is missing state '{layer['state']}!")
-                    continue
-                if ("directions" in state and state["directions"] != 1) or ("delays" in state):
-                    # TODO:
-                    eprint(
-                        f"Entity '{entity['id']}' has more than one direction!")
-                    continue
+                    # Some files have a BOM for some reason...
+                    json_text = layer_rsi_file.read_text("UTF-8").replace("\uFEFF", "")
+                    layer_rsa = json.loads(json_text)
 
-                layer_image_file = layer_rsi_file.parent / \
-                    (state["name"] + ".png")
-                layer_image = cv2.imread(
-                    layer_image_file, cv2.IMREAD_UNCHANGED)
-                height, width, dim = layer_image.shape
-                if dim == 3:
-                    layer_image = cv2.cvtColor(layer_image, cv2.COLOR_RGB2RGBA)
-                    dim = 4
-                if img is None:
-                    img = layer_image
-                else:
-                    e_height, e_width, e_dim = img.shape
-                    if e_height != height or e_width != width or e_dim != dim:
+                    # YAML has some eager boolean parsing...
+                    if layer["state"] is True:
+                        yes = ["y", "yes", "true", "on"]
+                        state = next(
+                            (x for x in layer_rsa["states"]
+                             if x["name"].lower() in yes), None)
+                    elif layer["state"] is False:
+                        no = ["n", "no", "false", "off"]
+                        state = next(
+                            (x for x in layer_rsa["states"]
+                             if x["name"].lower() in no), None)
+                    else:
+                        state = next(
+                            (x for x in layer_rsa["states"]
+                             if x["name"] == str(layer["state"])),None)
+
+                    if not state:
+                        eprint(f"Entity '{entity['id']}' is missing state '{layer['state']}!")
+                        continue
+
+                    if ("directions" in state and state["directions"] != 1) or ("delays" in state):
+                        # TODO:
                         eprint(
-                            f"Entity '{entity['id']}' has differently sized layers!")
+                            f"Entity '{entity['id']}' has more than one direction!")
                         continue
-                    add_transparent_image(img, layer_image)
 
-            if img is None:
-                eprint(f"Entity '{entity['id']}' has no valid layers!")
-                continue
-            cv2.imwrite(dest, img)
+                    layer_image_file = layer_rsi_file.parent / (state["name"] + ".png")
+                    layer_image = cv2.imread(layer_image_file, cv2.IMREAD_UNCHANGED)
+                    height, width, dim = layer_image.shape
+                    if dim == 3:
+                        layer_image = cv2.cvtColor(
+                            layer_image, cv2.COLOR_RGB2RGBA)
+                        dim = 4
+                    if img is None:
+                        img = layer_image
+                    else:
+                        e_height, e_width, e_dim = img.shape
+                        if e_height != height or e_width != width or e_dim != dim:
+                            eprint(
+                                f"Entity '{entity['id']}' has differently sized layers!")
+                            continue
+                        add_transparent_image(img, layer_image)
 
-            # Update the sprite but not the index.
-            if entity["id"] in existing.ids:
-                continue
+                if img is None:
+                    eprint(f"Entity '{entity['id']}' has no valid layers!")
+                    continue
+                cv2.imwrite(dest, img)
 
-            height, width, dim = img.shape
-            existing.ids.append(entity["id"])
-            existing.images.append(
-                Image(f"./.images/entities/{dest.name}", str(width), str(height)))
+                # Update the sprite but not the index.
+                if entity["id"] + f"_{directions}" in existing.ids:
+                    continue
+
+                height, width, dim = img.shape
+                existing.ids.append(entity["id"] + f"_{direction}")
+                existing.images.append(
+                    Image(f"./.images/entities/{dest.name}", str(width), str(height)))
 
     existing_out.write_text(json.dumps(existing, default=vars), "UTF-8")
     create_tsx(existing, f"Entities - {g_name}",

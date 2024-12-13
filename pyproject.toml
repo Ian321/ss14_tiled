@@ -19,3 +19,6 @@ enable = "all"
 
 [tool.pylint."TYPECHECK"]
 generated-members = "cv2"
+
+[tool.autopep8]
+max_line_length = 100
