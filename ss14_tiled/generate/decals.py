@@ -24,13 +24,7 @@ def _create_decals(root: Path, out: Path, name: str = "", color: str = "#FFF"):
         title = f"Decals - {name}"
 
     existing_out = out / ".data" / f"{dir_name}.json"
-    existing_out.parent.mkdir(exist_ok=True)
-
-    existing: CacheJSON = CacheJSON([], [])
-    if existing_out.exists():
-        existing = CacheJSON.from_dict(
-            json.loads(existing_out.read_text("UTF-8")))
-        assert len(existing.ids) == len(existing.images)
+    existing = CacheJSON.from_json(existing_out)
 
     decals_out = out / ".images" / dir_name
     decals_out.mkdir(parents=True, exist_ok=True)

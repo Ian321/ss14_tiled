@@ -21,14 +21,8 @@ def create_entities(root: Path, out: Path):
 
     resources_dir = root / "Resources"
     for g_name, group in groups:
-        # Cache
         existing_out = out / ".data" / f"entities_{g_name}.json"
-        existing_out.parent.mkdir(exist_ok=True)
-        existing: CacheJSON = CacheJSON([], [])
-        if existing_out.exists():
-            existing = CacheJSON.from_dict(
-                json.loads(existing_out.read_text("UTF-8")))
-            assert len(existing.ids) == len(existing.images)
+        existing = CacheJSON.from_json(existing_out)
 
         for entity in group.values():
             sprite = next(

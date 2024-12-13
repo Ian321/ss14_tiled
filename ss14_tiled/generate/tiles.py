@@ -11,13 +11,7 @@ from ..shared import CacheJSON, Image, create_tsx, remove_prefix
 def create_tiles(root: Path, out: Path):
     """Create the "tile"-tiles. As in the floor."""
     existing_out = out / ".data" / "tiles.json"
-    existing_out.parent.mkdir(exist_ok=True)
-
-    existing: CacheJSON = CacheJSON([], [])
-    if existing_out.exists():
-        existing = CacheJSON.from_dict(
-            json.loads(existing_out.read_text("UTF-8")))
-        assert len(existing.ids) == len(existing.images)
+    existing = CacheJSON.from_json(existing_out)
 
     tiles_out = out / ".images" / "tiles"
     tiles_out.mkdir(parents=True, exist_ok=True)

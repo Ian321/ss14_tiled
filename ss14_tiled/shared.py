@@ -1,4 +1,5 @@
 """Shared stuffs and utility functions."""
+import json
 import sys
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -30,6 +31,17 @@ class CacheJSON:
         images = [Image(x["source"], x["width"], x["height"])
                   for x in d["images"]]
         return CacheJSON(d["ids"], images)
+
+    @staticmethod
+    def from_json(path: Path) -> "CacheJSON":
+        """Build this object recursively from a given file."""
+        path.parent.mkdir(exist_ok=True)
+        existing: CacheJSON = CacheJSON([], [])
+        if path.exists():
+            existing = CacheJSON.from_dict(
+                json.loads(path.read_text("UTF-8")))
+            assert len(existing.ids) == len(existing.images)
+        return existing
 
 
 def create_tsx(cache: CacheJSON, name: str, output: Path, extra: dict = None):
