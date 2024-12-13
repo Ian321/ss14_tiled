@@ -5,7 +5,7 @@ from pathlib import Path
 import cv2
 import yaml
 
-from ..shared import CacheJSON, Image, create_tsx
+from ..shared import CacheJSON, Image, create_tsx, remove_prefix
 
 
 def create_decals(root: Path, out: Path):
@@ -45,7 +45,7 @@ def _create_decals(root: Path, out: Path, name: str = "", color: str = "#FFF"):
             if decal["type"] != "decal":
                 continue  # alias?
             sprite: Path = resources_dir / "Textures" / \
-                decal["sprite"]["sprite"].strip("/Textures") / \
+                remove_prefix(decal["sprite"]["sprite"], "/Textures/") / \
                 (str(decal["sprite"]["state"]) + ".png")
             dest: Path = decals_out / (str(decal["id"]) + sprite.suffix)
             img = cv2.imread(sprite, cv2.IMREAD_UNCHANGED)

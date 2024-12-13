@@ -3,11 +3,7 @@ import sys
 from pathlib import Path
 
 from .generate import generate
-
-
-def eprint(*args, **kwargs):
-    """Print to std-error."""
-    print(*args, file=sys.stderr, **kwargs)
+from .shared import eprint
 
 
 def main():

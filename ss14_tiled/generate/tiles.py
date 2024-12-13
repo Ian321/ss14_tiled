@@ -5,7 +5,7 @@ from pathlib import Path
 import cv2
 import yaml
 
-from ..shared import CacheJSON, Image, create_tsx
+from ..shared import CacheJSON, Image, create_tsx, remove_prefix
 
 
 def create_tiles(root: Path, out: Path):
@@ -35,7 +35,7 @@ def create_tiles(root: Path, out: Path):
             if not "variants" in tile:
                 tile["variants"] = 1
 
-            sprite = resources_dir / tile["sprite"].strip("/")
+            sprite = resources_dir / remove_prefix(tile["sprite"], "/")
             dest: Path = tiles_out / (tile["id"] + sprite.suffix)
             img = cv2.imread(sprite, cv2.IMREAD_UNCHANGED)
             height, width = img.shape[:2]

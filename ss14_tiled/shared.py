@@ -1,7 +1,13 @@
 """Shared stuffs and utility functions."""
-from pathlib import Path
-from dataclasses import dataclass
+import sys
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
+from pathlib import Path
+
+
+def eprint(*args, **kwargs):
+    """Print to std-error."""
+    print(*args, file=sys.stderr, **kwargs)
 
 
 @dataclass
@@ -42,3 +48,33 @@ def create_tsx(cache: CacheJSON, name: str, output: Path, extra: dict = None):
             width=str(image.width), height=str(image.height))
     ET.ElementTree(root_element).write(output,
                                        encoding="UTF-8", xml_declaration=True)
+
+
+def add_transparent_image(background, foreground):
+    """https://stackoverflow.com/a/59211216"""
+    bg_h, bg_w, bg_channels = background.shape
+    fg_h, fg_w, fg_channels = foreground.shape
+
+    assert bg_h == fg_h
+    assert bg_w == fg_w
+    assert bg_channels == 4
+    assert fg_channels == 4
+
+    alpha_background = background[:, :, 3] / 255.0
+    alpha_foreground = foreground[:, :, 3] / 255.0
+
+    # set adjusted colors
+    for color in range(0, 3):
+        background[:, :, color] = alpha_foreground * foreground[:, :, color] + \
+            alpha_background * background[:, :, color] * (1 - alpha_foreground)
+
+    # set adjusted alpha and denormalize back to 0-255
+    background[:, :, 3] = (1 - (1 - alpha_foreground)
+                           * (1 - alpha_background)) * 255
+
+
+def remove_prefix(string: str, prefix: str):
+    """Remove a prefix from a string if it exists."""
+    if string.startswith(prefix):
+        return string[len(prefix):]
+    return string
