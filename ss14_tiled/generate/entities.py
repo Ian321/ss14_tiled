@@ -24,7 +24,7 @@ def create_entities(root: Path, out: Path):
         existing_out = out / ".data" / f"entities_{g_name}.json"
         existing = CacheJSON.from_json(existing_out)
 
-        for entity in group.values():
+        for entity in sorted(group.values(), key=lambda x: x["id"]):
             sprite = next(
                 (x for x in entity["components"] if x["type"] == "Sprite"), None)
             icon = next(
@@ -314,17 +314,32 @@ def filter_entities(entities: dict) -> dict:
 
 def group_entities(entities: dict) -> list[tuple[str, dict[str, dict]]]:
     """Split entities into groups."""
+    computers = {}
+    markers = {}
+    posters = {}
     signs = {}
     other = {}
 
     # TODO: More groups
     for key, value in entities.items():
-        if "parent" in value and value["parent"] in ("BaseSign", "BaseSignDirectional"):
+        if "parent" in value and value["parent"] in (
+                "BaseComputer", "BaseComputerAiAccess", "BaseComputerShuttle"):
+            computers[key] = value
+        elif "parent" in value and value["parent"] in (
+                "MarkerBase", "SpawnPointJobBase", "BaseAnomalyInjector",
+                "SalvageMobSpawner", "SalvageSpawnerScrapCommon", "SalvageSpawnerScrapValuable"):
+            markers[key] = value
+        elif "parent" in value and value["parent"] == "PosterBase":
+            posters[key] = value
+        elif "parent" in value and value["parent"] in ("BaseSign", "BaseSignDirectional"):
             signs[key] = value
         else:
             other[key] = value
 
     return [
+        ("Computers", computers),
+        ("Markers", markers),
+        ("Posters", posters),
         ("Signs", signs),
         ("Other", other),
     ]
