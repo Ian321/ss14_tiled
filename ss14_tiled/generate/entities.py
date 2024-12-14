@@ -220,8 +220,11 @@ def find_entities(root: Path) -> list[dict]:
             if entity["type"] != "entity":
                 continue  # alias?
             if "parent" in entity:
+                if isinstance(entity["parent"], str):
+                    entity["parent"] = [entity["parent"]]
                 children.append(entity)
             else:
+                entity["parent"] = []
                 adults[entity["id"]] = entity
 
     while len(children) > 0:
@@ -260,7 +263,7 @@ def merge_entity(child: dict, parent: dict) -> dict:
     """Merge entities."""
     out = copy.deepcopy(parent)
     for (key, value) in child.items():
-        if key == "components":
+        if key == "components" or key == "parent":
             continue
         out[key] = value
 
@@ -268,6 +271,8 @@ def merge_entity(child: dict, parent: dict) -> dict:
         out["abstract"] = True
     elif "abstract" in out:
         del out["abstract"]
+
+    out["parent"] = list(set(out["parent"] + child["parent"]))
 
     if "components" in child:
         if not "components" in out:
@@ -314,32 +319,60 @@ def filter_entities(entities: dict) -> dict:
 
 def group_entities(entities: dict) -> list[tuple[str, dict[str, dict]]]:
     """Split entities into groups."""
+    pipes = {}
+    window_doors = {}
+    eat_and_drink = {}
+    clothes = {}
+    closets = {}
+    airlocks = {}
+    windows = {}
+    walls = {}
     computers = {}
     markers = {}
-    posters = {}
     signs = {}
     other = {}
 
-    # TODO: More groups
     for key, value in entities.items():
-        if "parent" in value and value["parent"] in (
-                "BaseComputer", "BaseComputerAiAccess", "BaseComputerShuttle"):
+        parents = value["parent"]
+        if "GasPipeBase" in parents or "DisposalPipeBase" in parents:
+            pipes[key] = value
+        elif "BaseWindoor" in parents:
+            window_doors[key] = value
+        elif "FoodBase" in parents or "DrinkBase" in parents:
+            eat_and_drink[key] = value
+        elif "Clothing" in parents:
+            clothes[key] = value
+        elif "ClosetBase" in parents or "BaseWallCloset" in parents:
+            closets[key] = value
+        elif key == "Airlock" or "Airlock" in parents or "BaseFirelock" in parents:
+            airlocks[key] = value
+        elif key == "Window" or "Window" in parents \
+                or key == "WindowDirectional" or "WindowDirectional" in parents \
+                or "PlastitaniumWindowBase" in parents:
+            windows[key] = value
+        elif key == "WallShuttleDiagonal" or "WallShuttleDiagonal" in parents \
+                or key == "WallPlastitaniumDiagonalIndestructible" or "BaseWall" in parents:
+            walls[key] = value
+        elif "BaseComputer" in parents:
             computers[key] = value
-        elif "parent" in value and value["parent"] in (
-                "MarkerBase", "SpawnPointJobBase", "BaseAnomalyInjector",
-                "SalvageMobSpawner", "SalvageSpawnerScrapCommon", "SalvageSpawnerScrapValuable"):
+        elif "MarkerBase" in parents:
             markers[key] = value
-        elif "parent" in value and value["parent"] == "PosterBase":
-            posters[key] = value
-        elif "parent" in value and value["parent"] in ("BaseSign", "BaseSignDirectional"):
+        elif "BaseSign" in parents:
             signs[key] = value
         else:
             other[key] = value
 
     return [
+        ("Pipes", pipes),
+        ("Windoors", window_doors),
+        ("Eat and Drink", eat_and_drink),
+        ("Clothes", clothes),
+        ("Closets and Lockers", closets),
+        ("Airlocks", airlocks),
+        ("Windows", windows),
+        ("Walls", walls),
         ("Computers", computers),
         ("Markers", markers),
-        ("Posters", posters),
         ("Signs", signs),
         ("Other", other),
     ]
