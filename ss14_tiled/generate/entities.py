@@ -34,7 +34,7 @@ def create_entities(root: Path, out: Path):
                 continue
 
             max_directions = 1
-            diagonal = "suffix" in entity and "diagonal" in str(entity["suffix"])
+            diagonal = "suffix" in entity and "diagonal" in str(entity["suffix"]).lower()
             if diagonal:
                 max_directions = 4
             for d, direction in enumerate(("S", "N", "E", "W", "SE", "SW", "NE", "NW")):
@@ -200,9 +200,9 @@ def create_entities(root: Path, out: Path):
                 existing.images.append(
                     Image(f"./.images/entities/{dest.name}", str(width), str(height)))
 
-    existing_out.write_text(json.dumps(existing, default=vars), "UTF-8")
-    create_tsx(existing, f"Entities - {g_name}",
-               out / f"entities_{g_name}.tsx")
+        existing_out.write_text(json.dumps(existing, default=vars), "UTF-8")
+        create_tsx(existing, f"Entities - {g_name}",
+                    out / f"entities_{g_name}.tsx")
 
 
 def find_entities(root: Path) -> list[dict]:
@@ -314,5 +314,17 @@ def filter_entities(entities: dict) -> dict:
 
 def group_entities(entities: dict) -> list[tuple[str, dict[str, dict]]]:
     """Split entities into groups."""
-    # TODO: implement
-    return [("All", entities)]
+    signs = {}
+    other = {}
+
+    # TODO: More groups
+    for key, value in entities.items():
+        if "parent" in value and value["parent"] in ("BaseSign", "BaseSignDirectional"):
+            signs[key] = value
+        else:
+            other[key] = value
+
+    return [
+        ("Signs", signs),
+        ("Other", other),
+    ]
