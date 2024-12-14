@@ -33,9 +33,12 @@ def create_entities(root: Path, out: Path):
                 eprint(f"Entity '{entity['id']}' has no sprite!")
                 continue
 
-            directions = 1
-            for d, direction in enumerate(("S", "N", "E", "W")):
-                if d >= directions:
+            max_directions = 1
+            diagonal = "suffix" in entity and "diagonal" in str(entity["suffix"])
+            if diagonal:
+                max_directions = 4
+            for d, direction in enumerate(("S", "N", "E", "W", "SE", "SW", "NE", "NW")):
+                if d >= max_directions:
                     break
 
                 dest: Path = entities_out / (str(entity["id"]) + f"_{direction}.png")
@@ -98,38 +101,94 @@ def create_entities(root: Path, out: Path):
                     else:
                         state = next(
                             (x for x in layer_rsa["states"]
-                             if x["name"] == str(layer["state"])),None)
+                             if x["name"] == str(layer["state"])), None)
 
                     if not state:
                         eprint(f"Entity '{entity['id']}' is missing state '{layer['state']}!")
                         continue
 
-                    if ("directions" in state and state["directions"] != 1) or ("delays" in state):
-                        # TODO:
-                        eprint(
-                            f"Entity '{entity['id']}' has more than one direction!")
+                    tile_width = layer_rsa["size"]["x"]
+                    tile_height = layer_rsa["size"]["y"]
+
+                    directions = 1
+                    if "directions" in state:
+                        directions = state["directions"]
+                        max_directions = max(max_directions, directions)
+
+                    if directions not in (1, 4, 8):
+                        eprint(f"Entity '{entity['id']} wants {directions} directions!")
                         continue
+
+                    per_direction = 1
+                    if "delays" in state:
+                        per_direction = len(state["delays"][0])
 
                     layer_image_file = layer_rsi_file.parent / (state["name"] + ".png")
                     layer_image = cv2.imread(layer_image_file, cv2.IMREAD_UNCHANGED)
                     height, width, dim = layer_image.shape
                     if dim == 3:
-                        layer_image = cv2.cvtColor(
-                            layer_image, cv2.COLOR_RGB2RGBA)
+                        layer_image = cv2.cvtColor(layer_image, cv2.COLOR_RGB2RGBA)
                         dim = 4
+
+                    if directions == 1:
+                        index = 0
+                    elif directions == max_directions:
+                        index = per_direction * d
+                    else:
+                        eprint(f"Entity '{entity['id']} has incompatible directions!")
+                        continue
+
+                    tiles_x = width // tile_width
+                    y_offset = (index // tiles_x) * tile_height
+                    x_offset = (index % tiles_x) * tile_width
+
+                    layer_image = layer_image[
+                        y_offset:y_offset+tile_height,
+                        x_offset:x_offset+tile_width
+                    ]
+                    height, width, dim = layer_image.shape
+
                     if img is None:
                         img = layer_image
                     else:
                         e_height, e_width, e_dim = img.shape
-                        if e_height != height or e_width != width or e_dim != dim:
-                            eprint(
-                                f"Entity '{entity['id']}' has differently sized layers!")
+                        if e_dim != dim:
+                            eprint(f"Entity '{entity['id']}' has a different number of dimensions!")
                             continue
+
+                        # Expand canvas so that both are the same size.
+                        # Just center it, as the only entity that uses this is the gravity-gen.
+                        m_height = max(e_height, height)
+                        m_width = max(e_width, width)
+                        img = cv2.copyMakeBorder(img,
+                                                 (m_height - e_height) // 2,
+                                                 (m_height - e_height) // 2,
+                                                 (m_width - e_width) // 2,
+                                                 (m_width - e_width) // 2,
+                                                 cv2.BORDER_CONSTANT, value=[0, 0, 0, 0])
+                        layer_image = cv2.copyMakeBorder(layer_image,
+                                                         (m_height - height) // 2,
+                                                         (m_height - height) // 2,
+                                                         (m_width - width) // 2,
+                                                         (m_width - width) // 2,
+                                                         cv2.BORDER_CONSTANT, value=[0, 0, 0, 0])
                         add_transparent_image(img, layer_image)
 
                 if img is None:
                     eprint(f"Entity '{entity['id']}' has no valid layers!")
                     continue
+
+                if diagonal:
+                    if not d:     # S
+                        pass
+                    elif d == 1:  # N
+                        img = cv2.rotate(img, cv2.ROTATE_180)
+                    elif d == 2:  # E
+                        img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                    elif d == 3:  # W
+                        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+                    else:
+                        raise ValueError(f"Expected d to be 0-3, not '{d}'.")
                 cv2.imwrite(dest, img)
 
                 # Update the sprite but not the index.
