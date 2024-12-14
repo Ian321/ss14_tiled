@@ -16,10 +16,8 @@ python3 -m ss14_tiled /path/to/space-station-14/
 
 ## TODO
 
-- [ ] Generate (SS14 -> Tiled)
-  - [x] Tile sets
-    - [x] Decals
-    - [x] Entities
-    - [x] Tiles
-  - [ ] Map
+- [x] Import (SS14 -> Tiled)
+  - [x] Decals
+  - [x] Entities
+  - [x] Tiles
 - [ ] Export (Tiled -> SS14)
