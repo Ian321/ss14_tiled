@@ -263,7 +263,7 @@ def merge_entity(child: dict, parent: dict) -> dict:
     """Merge entities."""
     out = copy.deepcopy(parent)
     for (key, value) in child.items():
-        if key == "components" or key == "parent":
+        if key in ("components", "parent"):
             continue
         out[key] = value
 

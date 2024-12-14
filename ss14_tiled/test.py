@@ -14,7 +14,7 @@ class TestMergeEntity(unittest.TestCase):
         child = {
             "type": "entity",
             "id": "BasaltTwo",
-            "parent": "BasaltOne",
+            "parent": ["BasaltOne"],
             "placement": {
                 "mode": "SnapgridCenter"
             },
@@ -29,6 +29,7 @@ class TestMergeEntity(unittest.TestCase):
         parent = {
             "type": "entity",
             "id": "BasaltOne",
+            "parent": [],
             "description": "Rock.",
             "placement": {
                 "mode": "SnapgridCenter"
@@ -57,7 +58,7 @@ class TestMergeEntity(unittest.TestCase):
         expected = {
             "type": "entity",
             "id": "BasaltTwo",
-            "parent": "BasaltOne",
+            "parent": ["BasaltOne"],
             "description": "Rock.",
             "placement": {
                 "mode": "SnapgridCenter"
@@ -91,20 +92,21 @@ class TestMergeEntity(unittest.TestCase):
         """If the child has a new component."""
         child = {
             "id": "B",
-            "parent": "A",
+            "parent": ["A"],
             "components": [{
                 "type": "test_2"
             }]
         }
         parent = {
             "id": "A",
+            "parent": [],
             "components": [{
                 "type": "test_1"
             }]
         }
         expected = {
             "id": "B",
-            "parent": "A",
+            "parent": ["A"],
             "components": [{
                 "type": "test_1"
             }, {
