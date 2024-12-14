@@ -202,7 +202,7 @@ def create_entities(root: Path, out: Path):
 
         existing_out.write_text(json.dumps(existing, default=vars), "UTF-8")
         create_tsx(existing, f"Entities - {g_name}",
-                    out / f"entities_{g_name}.tsx")
+                   out / f"entities_{g_name}.tsx")
 
 
 def find_entities(root: Path) -> list[dict]:
