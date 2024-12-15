@@ -56,7 +56,8 @@ python -m ss14_tiled /path/to/space-station-14/
 
 - This creates a `dist` directory with all the tile sets.
   - Alternatively you can download them from the [releases page](https://github.com/Ian321/ss14_tiled/releases).
-- Once you got the tile sets, you can create a new map in Tiled and drag them in.
+- Once you got the tile sets (the `.tsx` files),
+  you can create a new map in Tiled and drag them into "Tilesets" tab.
   - Make sure the tile size is set to 32x32 (default), cause that's what SS14 uses.
 
 ## TODO
