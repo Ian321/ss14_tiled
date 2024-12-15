@@ -4,6 +4,15 @@
 
 Tooling to use [Tiled](https://www.mapeditor.org/) as map editor for [SS14](https://github.com/space-wizards/space-station-14).
 
+## Prerequisites
+
+Only necessary if you want to build the tile sets yourself.
+
+- [Git](https://git-scm.com/)
+- [Python >= 3.11](https://www.python.org/)
+- Source code of SS14 (or a fork) somewhere on your system.
+  - `git clone https://github.com/space-wizards/space-station-14/`
+
 ## Usage
 
 <table>
@@ -16,6 +25,8 @@ Tooling to use [Tiled](https://www.mapeditor.org/) as map editor for [SS14](http
 
 ```sh
 # Setup
+git clone https://github.com/Ian321/ss14_tiled
+cd ss14_tiled
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -29,6 +40,8 @@ python3 -m ss14_tiled /path/to/space-station-14/
 
 ```powershell
 # Setup
+git clone https://github.com/Ian321/ss14_tiled
+cd ss14_tiled
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
